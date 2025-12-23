@@ -4,7 +4,12 @@ from config import TOKEN
 
 bot = telebot.TeleBot(TOKEN)
 
-
+@bot.message_handler(commands=['help'])
+def command_help(message):
+    bot.send_message(message.chat.id,text="/start - launching the bot. \n"
+                                          "/register - updating user data. \n"
+                                          "/check - checking how the user is logged into the database.\n"
+                     )
 def proverka_bd():
     try:
         with sqlite3.connect('Users.db') as conn:
@@ -16,7 +21,7 @@ def proverka_bd():
             )''')
             conn.commit()
     except Exception as e:
-        print(f"Ошибка при создании таблицы: {e}")
+        print(f"Error when creating the table: {e}")
 
 
 @bot.message_handler(commands=['start'])
@@ -30,7 +35,7 @@ def start(message):
         user = cursor.fetchone()
 
     if user:
-        bot.send_message(message.chat.id, "Вы уже зарегистрированы!")
+        bot.send_message(message.chat.id, "You are already registered!")
     else:
         # Автоматическая регистрация при /start
         with sqlite3.connect('Users.db') as conn:
@@ -44,18 +49,18 @@ def start(message):
                 )
             )
             conn.commit()
-        bot.send_message(message.chat.id, "Вы успешно зарегистрированы!")
+        bot.send_message(message.chat.id, "You are already registered!")
 
     bot.send_message(
         message.chat.id,
-        "Используйте /register для обновления данных\n"
-        "или /check для проверки регистрации"
+        "Use /register for update data\n"
+        "or /check to verify registration"
     )
 
 
 @bot.message_handler(commands=['register'])
 def register(message):
-    bot.send_message(message.chat.id, "Введите ваше имя:")
+    bot.send_message(message.chat.id, "Enter your name:")
     bot.register_next_step_handler(message, process_firstname)
 
 
@@ -63,11 +68,11 @@ def process_firstname(message):
     firstname = str(message.text.strip())
 
     if not firstname:
-        bot.send_message(message.chat.id, "Имя не может быть пустым. Попробуйте снова:")
+        bot.send_message(message.chat.id, "Name can't be empty. Try again:")
         bot.register_next_step_handler(message, process_firstname, )
         return
 
-    bot.send_message(message.chat.id, "Введите вашу фамилию:")
+    bot.send_message(message.chat.id, "Enter your lastname:")
     bot.register_next_step_handler(message, process_lastname,firstname)
 
 
@@ -75,7 +80,7 @@ def process_lastname(message, firstname):
     lastname = (message.text.strip())
 
     if not lastname:
-        bot.send_message(message.chat.id, "Фамилия не может быть пустой. Попробуйте снова:")
+        bot.send_message(message.chat.id, "Lastname can't be empty. Try again:")
         bot.register_next_step_handler(message, process_lastname,firstname)
         return
 
@@ -91,9 +96,9 @@ def process_lastname(message, firstname):
             )
             conn.commit()
 
-        bot.send_message(message.chat.id, "Данные успешно обновлены!")
+        bot.send_message(message.chat.id, "Data was updated successfully!")
     except Exception as e:
-        bot.send_message(message.chat.id, f"Ошибка сохранения: {e}")
+        bot.send_message(message.chat.id, f"Error of saving: {e}")
 
 
 @bot.message_handler(commands=['check'])
@@ -107,14 +112,14 @@ def check_registration(message):
 
     if user:
         response = (
-            f"Ваши данные:\n"
-            f"Имя: {user[0] or 'не указано'}\n"
-            f"Фамилия: {user[1] or 'не указано'}\n"
-            f"Username: {user[2] or 'не указано'}"
+            f"Your data:\n"
+            f"Name: {user[0] or 'empty'}\n"
+            f"Lastname: {user[1] or 'empty'}\n"
+            f"Username: {user[2] or 'empty'}"
         )
         bot.send_message(message.chat.id, response)
     else:
-        bot.send_message(message.chat.id, "Вы не зарегистрированы. Используйте /start или /register.")
+        bot.send_message(message.chat.id, "You are not registered. Use /start or /register.")
 
 
 if __name__ == '__main__':
