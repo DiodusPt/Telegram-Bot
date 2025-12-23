@@ -12,3 +12,4 @@ The bot supports the following commands:
 1. /start - start the bot.
 2. /register - updating user data.
 3. /check - checking how the user is logged into the database.
+4. /help - outputs a list of commands
