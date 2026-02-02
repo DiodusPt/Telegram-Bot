@@ -1,9 +1,8 @@
 import sqlite3
 import telebot
 import logging
-from config import TOKEN
+from config import TOKEN, ADMIN_ID
 
-ADMIN_ID=[1076758130]
 bot = telebot.TeleBot(TOKEN)
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -282,3 +281,4 @@ if __name__ == '__main__':
     proverka_bd()
     logger.info("Bot started and polling...")
     bot.polling(none_stop=True)
+
