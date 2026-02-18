@@ -192,10 +192,46 @@ def view_cabinet(message):
     bot.send_message(message.chat.id, response)
     start(message)
 
-@bot.message_handler(func=lambda message: True)
-def echo(message):
-    bot.send_message(message.chat.id,
-                   "Неизвестная команда. Используйте /start для списка команд.")
+
+@bot.message_handler(commands=['search'])
+def search(message):
+    msg = bot.send_message(message.chat.id, "Введите название объекта для поиска:")
+    bot.register_next_step_handler(msg, process_search_query)
+
+
+def process_search_query(message):
+    query = message.text.strip()
+    if not query:
+        bot.send_message(message.chat.id, "Запрос не может быть пустым!")
+        start(message)
+        return
+
+    conn = sqlite3.connect('inventory.db')
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        SELECT c.number, i.name, i.quantity, i.description
+        FROM items i
+        JOIN cabinets c ON i.cabinet_id = c.id
+        WHERE LOWER(i.name) LIKE LOWER(?)
+        ORDER BY c.number, i.name
+    ''', (f'%{query}%',))
+
+    results = cursor.fetchall()
+    conn.close()
+
+    if not results:
+        bot.send_message(message.chat.id, f"Ничего не найдено по запросу «{query}».")
+    else:
+        response = f"Результаты поиска по запросу «{query}»:\n\n"
+        for cabinet_num, name, qty, desc in results:
+            response += (
+                f"Кабинет {cabinet_num}:\n"
+                f"  • {name} ({qty} шт.)\n"
+                f"    • {desc}\n\n"
+            )
+        bot.send_message(message.chat.id, response)
+
     start(message)
 
 if __name__ == '__main__':
