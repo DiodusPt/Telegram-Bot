@@ -9,7 +9,7 @@ def init_db():
     conn = sqlite3.connect('inventory.db')
     conn.execute('''CREATE TABLE IF NOT EXISTS cabinets
                  (id INTEGER PRIMARY KEY, 
-                 № TEXT UNIQUE NOT NULL)''')
+                 number TEXT UNIQUE NOT NULL)''')
 
     conn.execute('''CREATE TABLE IF NOT EXISTS items
                  (id INTEGER PRIMARY KEY,
@@ -151,11 +151,9 @@ def view_cabinet(message):
 
     response = f"Содержимое кабинета {cabinet_number}:\n\n"
     for name, qty, desc in items:
-        response += f"• {name} ({qty} шт.)\n  {desc}\n\n"
+        response += f"• {name} ({qty} шт.)\n  •{desc}\n\n"
 
     bot.send_message(message.chat.id, response)
-
-
 
 @bot.message_handler(func=lambda message: True)
 def echo(message):
